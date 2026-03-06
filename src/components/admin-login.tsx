@@ -1,107 +1,99 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner"; // or your preferred toast library
-
-// 1. Define your schema
-const loginSchema = z.object({
-  username: z.string().min(2, "Username is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { User, RectangleEllipsis } from 'lucide-react';
 
 export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({ username: '', password: '' });
   const navigate = useNavigate();
 
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { username: "", password: "" },
-  });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  // 2. The Connection Logic
-  async function onSubmit(values: z.infer<typeof loginSchema>) {
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Manual validation instead of Zod
+    if (formData.username.length < 2) return toast.error('Username is too short');
+    if (formData.password.length < 6) return toast.error('Password must be at least 6 characters');
+
     setIsLoading(true);
-    try {
-      const response = await fetch("http://localhost:3000/api/loginAdmin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+
+    const loginPromise = async () => {
+      const response = await fetch('http://localhost:3000/api/loginAdmin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Something went wrong");
+        // Specifically catches the 403 or 400 from your authController.js
+        throw new Error(data.message || 'Authentication failed');
       }
+      return data;
+    };
 
-      // Success! Store the token
-      localStorage.setItem("adminToken", data.token);
-      toast.success("Login successful! Redirecting...");
-
-      // 3. Use navigate to go to your protected route
-      navigate("/dashboard");
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unexpected error occurred";
-      toast.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+    toast.promise(loginPromise(), {
+      loading: 'Verifying administrative access...',
+      success: (data) => {
+        localStorage.setItem('adminToken', data.token);
+        navigate('/dashboard');
+        return data.message || 'Login Successful';
+      },
+      error: (err) => {
+        setIsLoading(false);
+        return err.message;
+      },
+      finally: () => setIsLoading(false),
+    });
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-50">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center">Admin Access</h1>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="username"
-              render={(
-                { field }, // If 'field' still shows an error, use ({ field }: { field: any })
-              ) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input placeholder="admin_user" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Authenticating..." : "Login"}
-            </Button>
-          </form>
-        </Form>
+    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+      <div className="w-full max-w-md space-y-6 rounded-lg border border-slate-100 bg-white p-8 shadow-md">
+        <div className="space-y-2 text-center">
+          <h1 className="text-2xl font-bold tracking-tight">Admin Access</h1>
+          <p className="text-muted-foreground text-sm">Login using your head admin credentials.</p>
+        </div>
+
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Username</label>
+            <div className="relative">
+              <User className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+              <Input name="username" className="pl-9" placeholder="Enter your username here..." value={formData.username} onChange={handleInputChange} required />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Password</label>
+            <div className="relative">
+              <RectangleEllipsis className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+              <Input
+                name="password"
+                type="password"
+                className="pl-9"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          </div>
+
+          <Button type="submit" className="w-full bg-[#111] transition-all hover:bg-black" disabled={isLoading}>
+            {isLoading ? 'Authenticating...' : 'Login to Dashboard'}
+          </Button>
+        </form>
       </div>
     </div>
   );
