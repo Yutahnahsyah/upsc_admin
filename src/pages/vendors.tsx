@@ -217,14 +217,11 @@ export default function Vendors() {
   };
 
   // --- Filter Logic ---
-  const filteredStalls = useMemo(
-    () => stalls.filter((s) => s.stall_name.toLowerCase().includes(stallSearch.toLowerCase()) || s.stall_id.toString().includes(stallSearch)),
-    [stalls, stallSearch],
-  );
+  const filteredStalls = useMemo(() => stalls.filter((s) => s.stall_name.toLowerCase().includes(stallSearch.toLowerCase()) || s.stall_id.toString().includes(stallSearch)), [stalls, stallSearch]);
 
   const filteredVendors = useMemo(
     () => vendors.filter((v) => v.full_name.toLowerCase().includes(vendorSearch.toLowerCase()) || v.username.toLowerCase().includes(vendorSearch)),
-    [vendors, vendorSearch],
+    [vendors, vendorSearch]
   );
 
   return (
@@ -257,13 +254,7 @@ export default function Vendors() {
                 <label className="text-sm font-medium">Location</label>
                 <div className="relative">
                   <MapPin className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-                  <Input
-                    className="pl-9"
-                    placeholder="Enter the location of stall..."
-                    value={stallData.location}
-                    onChange={(e) => setStallData({ ...stallData, location: e.target.value })}
-                    required
-                  />
+                  <Input className="pl-9" placeholder="Enter the location of stall..." value={stallData.location} onChange={(e) => setStallData({ ...stallData, location: e.target.value })} required />
                 </div>
               </div>
               <button className="w-full rounded-md bg-[#111] py-2 font-medium text-white transition-all hover:bg-black">Create Stall</button>
@@ -312,27 +303,14 @@ export default function Vendors() {
                 <label className="text-sm font-medium">Username</label>
                 <div className="relative">
                   <User className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-                  <Input
-                    className="pl-9"
-                    placeholder="Enter the username here..."
-                    value={vendorData.username}
-                    onChange={(e) => setVendorData({ ...vendorData, username: e.target.value })}
-                    required
-                  />
+                  <Input className="pl-9" placeholder="Enter the username here..." value={vendorData.username} onChange={(e) => setVendorData({ ...vendorData, username: e.target.value })} required />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Temporary Password</label>
                 <div className="relative">
                   <RectangleEllipsis className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-                  <Input
-                    className="pl-9"
-                    type="password"
-                    placeholder="••••••••"
-                    value={vendorData.password}
-                    onChange={(e) => setVendorData({ ...vendorData, password: e.target.value })}
-                    required
-                  />
+                  <Input className="pl-9" type="password" placeholder="••••••••" value={vendorData.password} onChange={(e) => setVendorData({ ...vendorData, password: e.target.value })} required />
                 </div>
               </div>
               <button className="w-full rounded-md bg-[#111] py-2 font-medium text-white transition-all hover:bg-black">Register Vendor</button>
@@ -357,12 +335,7 @@ export default function Vendors() {
               </Button>
               <div className="relative w-48">
                 <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
-                <Input
-                  placeholder="Search stalls..."
-                  className="h-9 pl-8 text-sm"
-                  value={stallSearch}
-                  onChange={(e) => setStallSearch(e.target.value)}
-                />
+                <Input placeholder="Search stalls..." className="h-9 pl-8 text-sm" value={stallSearch} onChange={(e) => setStallSearch(e.target.value)} />
               </div>
             </div>
           </CardHeader>
@@ -382,10 +355,7 @@ export default function Vendors() {
                     <div className="text-muted-foreground py-10 text-center text-sm">Loading...</div>
                   ) : (
                     filteredStalls.map((s) => (
-                      <TableRow
-                        key={s.stall_id}
-                        className="grid w-full grid-cols-[0.85fr_2.15fr_1fr_2.2fr] border-b last:border-0 hover:bg-slate-50/30"
-                      >
+                      <TableRow key={s.stall_id} className="grid w-full grid-cols-[0.85fr_2.15fr_1fr_2.2fr] border-b last:border-0 hover:bg-slate-50/30">
                         <TableCell className="flex items-center py-3 pl-6 text-sm font-medium">#{s.stall_id}</TableCell>
                         <TableCell className="flex min-w-0 flex-col justify-center py-3">
                           <div className="truncate text-sm font-semibold">{s.stall_name}</div>
@@ -403,12 +373,7 @@ export default function Vendors() {
                             {s.is_active ? <PowerOff className="mr-1.5 h-3.5 w-3.5" /> : <Power className="mr-1.5 h-3.5 w-3.5" />}
                             {s.is_active ? 'Deactivate' : 'Activate'}
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:bg-destructive/10 h-8 text-xs"
-                            onClick={() => handleDeleteStall(s.stall_id)}
-                          >
+                          <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 h-8 text-xs" onClick={() => handleDeleteStall(s.stall_id)}>
                             <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
                           </Button>
                         </TableCell>
@@ -436,12 +401,7 @@ export default function Vendors() {
               </Button>
               <div className="relative w-48">
                 <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
-                <Input
-                  placeholder="Search vendors..."
-                  className="h-9 pl-8 text-sm"
-                  value={vendorSearch}
-                  onChange={(e) => setVendorSearch(e.target.value)}
-                />
+                <Input placeholder="Search vendors..." className="h-9 pl-8 text-sm" value={vendorSearch} onChange={(e) => setVendorSearch(e.target.value)} />
               </div>
             </div>
           </CardHeader>
@@ -461,22 +421,12 @@ export default function Vendors() {
                     <div className="text-muted-foreground py-10 text-center text-sm">Loading...</div>
                   ) : (
                     filteredVendors.map((v) => (
-                      <TableRow
-                        key={v.admin_id}
-                        className="grid w-full grid-cols-[1.5fr_1.4fr_1fr_0.8fr] border-b last:border-0 hover:bg-slate-50/30"
-                      >
+                      <TableRow key={v.admin_id} className="grid w-full grid-cols-[1.5fr_1.4fr_1fr_0.8fr] border-b last:border-0 hover:bg-slate-50/30">
                         <TableCell className="flex items-center truncate py-2 pl-6 text-sm font-medium">{v.full_name}</TableCell>
                         <TableCell className="text-muted-foreground flex items-center truncate py-2 text-sm">{v.username}</TableCell>
-                        <TableCell className="text-muted-foreground flex items-center justify-center py-2 text-sm font-medium">
-                          #{v.stall_id}
-                        </TableCell>
+                        <TableCell className="text-muted-foreground flex items-center justify-center py-2 text-sm font-medium">#{v.stall_id}</TableCell>
                         <TableCell className="flex items-center justify-center py-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:bg-destructive/10 h-8 text-xs"
-                            onClick={() => handleDeleteVendor(v.admin_id)}
-                          >
+                          <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 h-8 text-xs" onClick={() => handleDeleteVendor(v.admin_id)}>
                             <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
                           </Button>
                         </TableCell>

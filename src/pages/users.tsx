@@ -48,10 +48,7 @@ export default function UserAccounts() {
   }, []);
 
   const filteredUsers = users.filter(
-    (user) =>
-      user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.employee_id.includes(searchTerm),
+    (user) => user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase()) || user.employee_id.includes(searchTerm)
   );
 
   const handleDelete = async (employeeId: string) => {
@@ -120,10 +117,7 @@ export default function UserAccounts() {
                   <div className="text-muted-foreground py-10 text-center text-sm">No users found.</div>
                 ) : (
                   filteredUsers.map((user) => (
-                    <TableRow
-                      key={user.employee_id}
-                      className={`${'grid w-full grid-cols-[0.8fr_1.5fr_1.5fr_1fr_1fr]'} border-b transition-colors last:border-0 hover:bg-slate-50/30`}
-                    >
+                    <TableRow key={user.employee_id} className={`${'grid w-full grid-cols-[0.8fr_1.5fr_1.5fr_1fr_1fr]'} border-b transition-colors last:border-0 hover:bg-slate-50/30`}>
                       <TableCell className="text-muted-foreground flex items-center py-2 pl-6 text-sm font-medium">#{user.employee_id}</TableCell>
                       <TableCell className="flex flex-col justify-center overflow-hidden py-2">
                         <div className="truncate text-sm font-medium">{user.full_name}</div>
@@ -132,12 +126,7 @@ export default function UserAccounts() {
                       <TableCell className="text-muted-foreground flex items-center truncate py-2 text-sm">{user.email}</TableCell>
                       <TableCell className="text-muted-foreground flex items-center justify-center py-2 text-sm">{user.department}</TableCell>
                       <TableCell className="flex items-center justify-center py-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-destructive hover:bg-destructive/10 h-8 text-xs"
-                          onClick={() => handleDelete(user.employee_id)}
-                        >
+                        <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 h-8 text-xs" onClick={() => handleDelete(user.employee_id)}>
                           <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
                         </Button>
                       </TableCell>

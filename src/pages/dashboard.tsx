@@ -49,7 +49,7 @@ export default function Dashboard() {
     <>
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Welcome, Head Admin</h1>
-        <p className="text-muted-foreground">Here is what is happening with your system today.</p>
+        <p className="text-muted-foreground">Here is what is happening with your system.</p>
       </header>
 
       {/* Stats Grid */}
@@ -57,11 +57,7 @@ export default function Dashboard() {
         <StatCard title="Total Users" value={loading ? '...' : stats.totalUsers.toLocaleString()} icon={<Users className="text-blue-500" />} />
         <StatCard title="Total Vendors" value={loading ? '...' : stats.totalVendors.toLocaleString()} icon={<UserStar className="text-gray-500" />} />
         <StatCard title="Active Stalls" value={loading ? '...' : stats.activeStalls.toLocaleString()} icon={<Store className="text-green-500" />} />
-        <StatCard
-          title="Inactive Stalls"
-          value={loading ? '...' : stats.inactiveStalls.toLocaleString()}
-          icon={<Store className="text-gray-500" />}
-        />
+        <StatCard title="Inactive Stalls" value={loading ? '...' : stats.inactiveStalls.toLocaleString()} icon={<Store className="text-gray-500" />} />
       </div>
 
       <Card className="col-span-4">
@@ -69,9 +65,7 @@ export default function Dashboard() {
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-muted-foreground flex h-[200px] items-center justify-center rounded-md border-2 border-dashed">
-            Main management table or charts will go here.
-          </div>
+          <div className="text-muted-foreground flex h-[200px] items-center justify-center rounded-md border-2 border-dashed">Main management table or charts will go here.</div>
         </CardContent>
       </Card>
     </>
