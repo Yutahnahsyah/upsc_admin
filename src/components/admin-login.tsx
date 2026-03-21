@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input'; // Import your new component
 import { toast } from 'sonner';
 import { User, RectangleEllipsis } from 'lucide-react';
 
@@ -20,7 +21,6 @@ export default function AdminLogin() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Manual validation instead of Zod
     if (formData.username.length < 2) return toast.error('Username is too short');
     if (formData.password.length < 6) return toast.error('Password must be at least 6 characters');
 
@@ -36,7 +36,6 @@ export default function AdminLogin() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Specifically catches the 403 or 400 from your authController.js
         throw new Error(data.message || 'Authentication failed');
       }
       return data;
@@ -66,6 +65,7 @@ export default function AdminLogin() {
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
+          {/* Username Field */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Username</label>
             <div className="relative">
@@ -74,20 +74,10 @@ export default function AdminLogin() {
             </div>
           </div>
 
+          {/* Password Field - Now using Reusable Component */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Password</label>
-            <div className="relative">
-              <RectangleEllipsis className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
-              <Input
-                name="password"
-                type="password"
-                className="pl-9"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+            <PasswordInput name="password" placeholder="••••••••" value={formData.password} onChange={handleInputChange} required leftIcon={<RectangleEllipsis className="h-4 w-4" />} />
           </div>
 
           <Button type="submit" className="w-full bg-[#111] transition-all hover:bg-black" disabled={isLoading}>

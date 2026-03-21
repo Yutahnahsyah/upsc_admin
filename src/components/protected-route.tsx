@@ -1,8 +1,8 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedRoute = () => {
   // Check if the token exists in localStorage
-  const token = localStorage.getItem("adminToken");
+  const token = localStorage.getItem('adminToken');
 
   // If no token, redirect to login
   if (!token) {

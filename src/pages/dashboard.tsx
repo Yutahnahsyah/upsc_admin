@@ -49,7 +49,6 @@ export default function Dashboard() {
     <>
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Welcome, Head Admin</h1>
-        <p className="text-muted-foreground">Here is what is happening with your system.</p>
       </header>
 
       {/* Stats Grid */}
@@ -60,7 +59,7 @@ export default function Dashboard() {
         <StatCard title="Inactive Stalls" value={loading ? '...' : stats.inactiveStalls.toLocaleString()} icon={<Store className="text-gray-500" />} />
       </div>
 
-      <Card className="col-span-4">
+      <Card className="col-span-4 flex flex-col border-2 shadow-sm">
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
