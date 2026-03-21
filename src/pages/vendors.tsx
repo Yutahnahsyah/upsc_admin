@@ -6,9 +6,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Search, Trash2, RefreshCw, Power, PowerOff, MapPin, Store, User, Contact, RectangleEllipsis, Archive, Edit } from 'lucide-react';
+import { Search, Trash2, RefreshCw, MapPin, Store, User, Contact, RectangleEllipsis, Archive, Edit, ArchiveRestore } from 'lucide-react';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Stall {
   stall_id: number;
@@ -35,7 +36,7 @@ export default function Vendors() {
   const [stallData, setStallData] = useState({ stall_name: '', location: '' });
   const [vendorData, setVendorData] = useState({ full_name: '', username: '', password: '', stall_id: '' });
   const [vendorTab, setVendorTab] = useState<'active' | 'archived'>('active');
-  const [stallTab, setStallTab] = useState<'active' | 'deactivated'>('active');
+  const [stallTab, setStallTab] = useState<'active' | 'archived'>('active');
   const [editingStall, setEditingStall] = useState<Stall | null>(null);
   const [isStallEditOpen, setIsStallEditOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
@@ -208,6 +209,18 @@ export default function Vendors() {
     });
   };
 
+  const handleDeleteVendor = async (adminId: number) => {
+    const promise = apiCall('/deleteVendor', { method: 'DELETE', body: JSON.stringify({ admin_id: adminId }) });
+    toast.promise(promise, {
+      loading: 'Deleting vendor...',
+      success: (data) => {
+        setVendors((prev) => prev.filter((v) => v.admin_id !== adminId));
+        return data.message;
+      },
+      error: (err) => err.message,
+    });
+  };
+
   const filteredStalls = stalls.filter((s) => s.stall_name.toLowerCase().includes(stallSearch.toLowerCase()) && (stallTab === 'active' ? s.is_active : !s.is_active));
   const filteredVendors = useMemo(
     () =>
@@ -217,9 +230,6 @@ export default function Vendors() {
     [vendors, vendorSearch, vendorTab]
   );
   const uniqueLocations = useMemo(() => Array.from(new Set(stalls.map((s) => s.location))).filter((loc) => loc && loc.trim() !== ''), [stalls]);
-
-  const tabActive = 'bg-white shadow-sm text-[#1a5c2a] font-semibold';
-  const tabInactive = 'text-slate-500 hover:text-[#1a5c2a]';
 
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
@@ -449,23 +459,26 @@ export default function Vendors() {
             <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
               <CardTitle style={{ color: '#1a5c2a' }}>Stall Directory</CardTitle>
               <div className="flex items-center gap-2">
-                <div className="flex rounded-md p-0.5" style={{ backgroundColor: '#e8f0e9' }}>
-                  <button onClick={() => setStallTab('active')} className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${stallTab === 'active' ? tabActive : tabInactive}`}>
-                    Active
-                  </button>
-                  <button onClick={() => setStallTab('deactivated')} className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${stallTab === 'deactivated' ? tabActive : tabInactive}`}>
-                    Deactivated
-                  </button>
-                </div>
-                <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => fetchStalls(true)}>
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
+                <Tabs value={stallTab} onValueChange={(value) => setStallTab(value as 'active' | 'archived')} className="w-auto">
+                  <TabsList className="h-9 border bg-[#f4f7f4]" style={{ borderColor: '#d4e8d4' }}>
+                    <TabsTrigger value="active" className="text-xs data-[state=active]:text-[#1a5c2a]">
+                      Active
+                    </TabsTrigger>
+                    <TabsTrigger value="archived" className="text-xs data-[state=active]:text-[#1a5c2a]">
+                      Archived
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
                 <div className="relative w-36 sm:w-44">
                   <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
-                  <Input placeholder="Search stalls..." className="h-9 pl-8 text-sm" value={stallSearch} onChange={(e) => setStallSearch(e.target.value)} />
+                  <Input placeholder="Search stalls..." className="h-9 border-[#d4e8d4] pl-8 text-sm" value={stallSearch} onChange={(e) => setStallSearch(e.target.value)} />
                 </div>
+                <Button variant="outline" size="icon" className="h-9 w-9 border-[#d4e8d4]" onClick={() => fetchStalls(true)}>
+                  <RefreshCw className="h-4 w-4" style={{ color: '#1a5c2a' }} />
+                </Button>
               </div>
             </CardHeader>
+
             <CardContent className="p-0">
               <div className="mx-4 mb-4 overflow-hidden overflow-x-auto rounded-md md:mx-6" style={{ border: '1px solid #c9a84c4d' }}>
                 <Table className="w-full min-w-[500px] table-fixed">
@@ -509,12 +522,13 @@ export default function Vendors() {
                           </TableCell>
                           <TableCell className="flex w-[15%] items-center justify-center py-3">
                             <span
-                              className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase ${s.is_active ? 'border-green-200 bg-green-100 text-green-700' : 'border-red-200 bg-red-100 text-red-700'}`}
+                              className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase ${s.is_active ? 'border-green-200 bg-green-100 text-green-700' : 'border-slate-200 bg-slate-100 text-slate-500'}`}
                             >
-                              {s.is_active ? 'Active' : 'Inactive'}
+                              {s.is_active ? 'Active' : 'Archived'}
                             </span>
                           </TableCell>
                           <TableCell className="flex w-[25%] items-center justify-center gap-2 py-3">
+                            {/* Edit Stall Button */}
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -529,21 +543,51 @@ export default function Vendors() {
                                   <Edit className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Edit Stall</TooltipContent>
+                              <TooltipContent side="top" className="border-none bg-slate-900 text-[11px] text-white">
+                                <p>Edit Stall</p>
+                              </TooltipContent>
                             </Tooltip>
+                            {/* Archive / Restore Stall Button */}
                             <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className={`h-8 w-8 ${s.is_active ? 'text-slate-500' : 'text-green-600 hover:bg-green-50'}`}
-                                  onClick={() => toggleStallStatus(s.stall_id, s.is_active)}
-                                >
-                                  {s.is_active ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>{s.is_active ? 'Deactivate Stall' : 'Activate Stall'}</TooltipContent>
+                              <Dialog>
+                                <TooltipTrigger asChild>
+                                  <DialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-amber-600 hover:bg-amber-50">
+                                      {s.is_active ? <Archive className="h-4 w-4" /> : <ArchiveRestore className="h-4 w-4" />}
+                                    </Button>
+                                  </DialogTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="border-none bg-slate-900 text-[11px] text-white">
+                                  <p>{s.is_active ? 'Archive Stall' : 'Restore Stall'}</p>
+                                </TooltipContent>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>{s.is_active ? 'Archive Stall' : 'Restore Stall'}</DialogTitle>
+                                    <DialogDescription>
+                                      Are you sure you want to {s.is_active ? 'archive' : 'restore'} <span className="font-bold text-slate-900">{s.stall_name}</span>?{' '}
+                                      {s.is_active ? 'It will be hidden from the student app.' : 'It will become visible in the student app again.'}
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <DialogFooter className="gap-2">
+                                    <DialogClose asChild>
+                                      <Button variant="outline" size="sm">
+                                        Cancel
+                                      </Button>
+                                    </DialogClose>
+                                    <DialogClose asChild>
+                                      <Button
+                                        size="sm"
+                                        className={s.is_active ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-green-700 text-white hover:bg-green-800'}
+                                        onClick={() => toggleStallStatus(s.stall_id, s.is_active)}
+                                      >
+                                        {s.is_active ? 'Confirm Archive' : 'Confirm Restore'}
+                                      </Button>
+                                    </DialogClose>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
                             </Tooltip>
+                            {/* Delete Stall Button */}
                             <Tooltip>
                               <Dialog>
                                 <TooltipTrigger asChild>
@@ -553,21 +597,23 @@ export default function Vendors() {
                                     </Button>
                                   </DialogTrigger>
                                 </TooltipTrigger>
-                                <TooltipContent>
+                                <TooltipContent side="top" className="border-none bg-slate-900 text-[11px] text-white">
                                   <p>Delete Stall</p>
                                 </TooltipContent>
                                 <DialogContent>
                                   <DialogHeader>
-                                    <DialogTitle>Are you sure?</DialogTitle>
+                                    <DialogTitle>Delete Stall</DialogTitle>
                                     <DialogDescription>
-                                      This will permanently delete <span className="font-bold">{s.stall_name}</span> and all associated data.
+                                      Are you sure you want to delete <span className="font-bold text-slate-900">{s.stall_name}</span>? This action cannot be undone.
                                     </DialogDescription>
                                   </DialogHeader>
-                                  <DialogFooter>
+                                  <DialogFooter className="gap-2">
                                     <DialogClose asChild>
-                                      <Button variant="outline">Cancel</Button>
+                                      <Button variant="outline" size="sm">
+                                        Cancel
+                                      </Button>
                                     </DialogClose>
-                                    <Button variant="destructive" onClick={() => handleDeleteStall(s.stall_id)}>
+                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteStall(s.stall_id)}>
                                       Confirm Delete
                                     </Button>
                                   </DialogFooter>
@@ -589,23 +635,26 @@ export default function Vendors() {
             <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
               <CardTitle style={{ color: '#1a5c2a' }}>Vendor Directory</CardTitle>
               <div className="flex items-center gap-2">
-                <div className="flex rounded-md p-0.5" style={{ backgroundColor: '#e8f0e9' }}>
-                  <button onClick={() => setVendorTab('active')} className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${vendorTab === 'active' ? tabActive : tabInactive}`}>
-                    Active
-                  </button>
-                  <button onClick={() => setVendorTab('archived')} className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${vendorTab === 'archived' ? tabActive : tabInactive}`}>
-                    Archived
-                  </button>
-                </div>
-                <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => fetchVendors(true)}>
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
+                <Tabs value={vendorTab} onValueChange={(value) => setVendorTab(value as 'active' | 'archived')} className="w-auto">
+                  <TabsList className="h-9 border bg-[#f4f7f4]" style={{ borderColor: '#d4e8d4' }}>
+                    <TabsTrigger value="active" className="text-xs data-[state=active]:text-[#1a5c2a]">
+                      Active
+                    </TabsTrigger>
+                    <TabsTrigger value="archived" className="text-xs data-[state=active]:text-[#1a5c2a]">
+                      Archived
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
                 <div className="relative w-36 sm:w-44">
                   <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
-                  <Input placeholder="Search vendors..." className="h-9 pl-8 text-sm" value={vendorSearch} onChange={(e) => setVendorSearch(e.target.value)} />
+                  <Input placeholder="Search vendors..." className="h-9 border-[#d4e8d4] pl-8 text-sm" value={vendorSearch} onChange={(e) => setVendorSearch(e.target.value)} />
                 </div>
+                <Button variant="outline" size="icon" className="h-9 w-9 border-[#d4e8d4]" onClick={() => fetchVendors(true)}>
+                  <RefreshCw className="h-4 w-4" style={{ color: '#1a5c2a' }} />
+                </Button>
               </div>
             </CardHeader>
+
             <CardContent className="p-0">
               <div className="mx-4 mb-4 overflow-hidden overflow-x-auto rounded-md md:mx-6" style={{ border: '1px solid #c9a84c4d' }}>
                 <Table className="w-full min-w-[500px] table-fixed">
@@ -655,6 +704,7 @@ export default function Vendors() {
                             </span>
                           </TableCell>
                           <TableCell className="flex w-[25%] items-center justify-center gap-2 py-3">
+                            {/* Edit Vendor Button */}
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -669,20 +719,82 @@ export default function Vendors() {
                                   <Edit className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Edit Profile</TooltipContent>
+                              <TooltipContent side="top" className="border-none bg-slate-900 text-[11px] text-white">
+                                <p>Edit Profile</p>
+                              </TooltipContent>
                             </Tooltip>
+                            {/* Archive / Restore Vendor Button */}
                             <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className={`h-8 w-8 ${v.is_active ? 'text-slate-600 hover:bg-slate-100' : 'text-blue-600 hover:bg-blue-50'}`}
-                                  onClick={() => handleArchiveVendor(v.admin_id)}
-                                >
-                                  {v.is_active ? <Archive className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>{v.is_active ? 'Archive Vendor' : 'Restore Vendor'}</TooltipContent>
+                              <Dialog>
+                                <TooltipTrigger asChild>
+                                  <DialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className={`h-8 w-8 ${v.is_active ? 'text-amber-600 hover:bg-amber-50' : 'text-amber-600 hover:bg-amber-50'}`}>
+                                      {v.is_active ? <Archive className="h-4 w-4" /> : <ArchiveRestore className="h-4 w-4" />}
+                                    </Button>
+                                  </DialogTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="border-none bg-slate-900 text-[11px] text-white">
+                                  <p>{v.is_active ? 'Archive Vendor' : 'Restore Vendor'}</p>
+                                </TooltipContent>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>{v.is_active ? 'Archive Vendor Account' : 'Restore Vendor Account'}</DialogTitle>
+                                    <DialogDescription>
+                                      Are you sure you want to {v.is_active ? 'archive' : 'restore'} <span className="font-bold text-slate-900">{v.full_name}</span>?{' '}
+                                      {v.is_active ? 'They will lose access to the system.' : 'They will regain access to the system.'}
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <DialogFooter className="gap-2">
+                                    <DialogClose asChild>
+                                      <Button variant="outline" size="sm">
+                                        Cancel
+                                      </Button>
+                                    </DialogClose>
+                                    <DialogClose asChild>
+                                      <Button
+                                        size="sm"
+                                        className={v.is_active ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-green-700 text-white hover:bg-green-800'}
+                                        onClick={() => handleArchiveVendor(v.admin_id)}
+                                      >
+                                        {v.is_active ? 'Confirm Archive' : 'Confirm Restore'}
+                                      </Button>
+                                    </DialogClose>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                            </Tooltip>
+                            {/* Delete Vendor Button */}
+                            <Tooltip>
+                              <Dialog>
+                                <TooltipTrigger asChild>
+                                  <DialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 h-8 w-8">
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </DialogTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="border-none bg-slate-900 text-[11px] text-white">
+                                  <p>Delete Vendor</p>
+                                </TooltipContent>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Delete Vendor Account</DialogTitle>
+                                    <DialogDescription>
+                                      Are you sure you want to delete <span className="font-bold text-slate-900">{v.full_name}</span>? This action cannot be undone.
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <DialogFooter className="gap-2">
+                                    <DialogClose asChild>
+                                      <Button variant="outline" size="sm">
+                                        Cancel
+                                      </Button>
+                                    </DialogClose>
+                                    <Button variant="destructive" size="sm" onClick={() => handleDeleteVendor(v.admin_id)}>
+                                      Confirm Delete
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
                             </Tooltip>
                           </TableCell>
                         </TableRow>

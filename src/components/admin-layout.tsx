@@ -1,5 +1,5 @@
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Store, Users, LogOut, ShieldCheck, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Store, Users, LogOut, ShieldCheck, ChevronRight, ShieldUser } from 'lucide-react';
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard': 'Dashboard',
@@ -104,17 +104,16 @@ export default function AdminLayout() {
           </div>
 
           {/* Right: Admin Badge — same sizing as vendor badges */}
-          <div className="flex items-center gap-2 rounded-xl border px-3 py-1.5" style={{ backgroundColor: '#faf6eb', borderColor: '#c9a84c' }}>
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border" style={{ backgroundColor: '#f0f7f1', borderColor: '#c9a84c' }}>
-              <ShieldCheck className="h-3.5 w-3.5" style={{ color: '#1a5c2a' }} />
+          <div className="flex items-center gap-2 rounded-xl border px-3 py-1.5" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border" style={{ backgroundColor: '#dbeafe', borderColor: '#93c5fd' }}>
+              <ShieldUser className="h-3.5 w-3.5 text-blue-500" />
             </div>
             <div className="leading-tight">
               <p className="text-[9px] font-medium" style={{ color: '#9ca3af' }}>
                 Logged in as
               </p>
-              <p className="text-xs font-bold" style={{ color: '#14491f' }}>
-                Head Admin
-              </p>
+              {/* Dynamic Vendor Name */}
+              <p className="text-xs font-bold text-blue-700">Head Admin</p>
             </div>
           </div>
         </header>
