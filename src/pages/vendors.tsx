@@ -10,14 +10,12 @@ import { Search, Trash2, RefreshCw, Power, PowerOff, MapPin, Store, User, Contac
 import { PasswordInput } from '@/components/ui/password-input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// --- Interfaces ---
 interface Stall {
   stall_id: number;
   stall_name: string;
   location: string;
   is_active: boolean;
 }
-
 export interface Vendor {
   admin_id: number;
   full_name: string;
@@ -32,45 +30,28 @@ export default function Vendors() {
   const [stalls, setStalls] = useState<Stall[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loadingLists, setLoadingLists] = useState(true);
-
   const [stallSearch, setStallSearch] = useState('');
   const [vendorSearch, setVendorSearch] = useState('');
-
   const [stallData, setStallData] = useState({ stall_name: '', location: '' });
-  const [vendorData, setVendorData] = useState({
-    full_name: '',
-    username: '',
-    password: '',
-    stall_id: '',
-  });
-
+  const [vendorData, setVendorData] = useState({ full_name: '', username: '', password: '', stall_id: '' });
   const [vendorTab, setVendorTab] = useState<'active' | 'archived'>('active');
   const [stallTab, setStallTab] = useState<'active' | 'deactivated'>('active');
-
-  // Modal States
   const [editingStall, setEditingStall] = useState<Stall | null>(null);
   const [isStallEditOpen, setIsStallEditOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
   const [isVendorEditOpen, setIsVendorEditOpen] = useState(false);
 
-  // --- API Helper ---
   const apiCall = async (endpoint: string, options: RequestInit) => {
     const token = localStorage.getItem('adminToken');
     const response = await fetch(`http://localhost:3000/api${endpoint}`, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-        ...options.headers,
-      },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...options.headers },
     });
-
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'An error occurred');
     return data;
   };
 
-  // --- Optimized Fetchers ---
   const fetchStalls = useCallback(async (isManual = false) => {
     const promise = apiCall(`/allStalls?t=${Date.now()}`, { method: 'GET' });
     if (isManual) {
@@ -122,18 +103,12 @@ export default function Vendors() {
     loadAll();
   }, [fetchStalls, fetchVendors]);
 
-  // --- Handlers ---
   const handleCreateStall = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedName = stallData.stall_name.trim();
     const trimmedLocation = stallData.location.trim();
     if (!trimmedName || !trimmedLocation) return toast.error('All fields are required');
-
-    const promise = apiCall('/createStall', {
-      method: 'POST',
-      body: JSON.stringify({ stall_name: trimmedName, location: trimmedLocation }),
-    });
-
+    const promise = apiCall('/createStall', { method: 'POST', body: JSON.stringify({ stall_name: trimmedName, location: trimmedLocation }) });
     toast.promise(promise, {
       loading: 'Initializing stall...',
       success: (data) => {
@@ -151,16 +126,8 @@ export default function Vendors() {
     const username = vendorData.username.trim();
     const stallId = vendorData.stall_id.trim();
     const password = vendorData.password;
-
-    if (!fullName || !username || !password || !stallId) {
-      return toast.error('All fields are required');
-    }
-
-    const promise = apiCall('/registerVendor', {
-      method: 'POST',
-      body: JSON.stringify({ ...vendorData, full_name: fullName, username, stall_id: stallId }),
-    });
-
+    if (!fullName || !username || !password || !stallId) return toast.error('All fields are required');
+    const promise = apiCall('/registerVendor', { method: 'POST', body: JSON.stringify({ ...vendorData, full_name: fullName, username, stall_id: stallId }) });
     toast.promise(promise, {
       loading: 'Registering vendor account...',
       success: (data) => {
@@ -173,11 +140,7 @@ export default function Vendors() {
   };
 
   const toggleStallStatus = async (stallId: number, currentStatus: boolean) => {
-    const promise = apiCall('/updateStallStatus', {
-      method: 'PATCH',
-      body: JSON.stringify({ stall_id: stallId, is_active: !currentStatus }),
-    });
-
+    const promise = apiCall('/updateStallStatus', { method: 'PATCH', body: JSON.stringify({ stall_id: stallId, is_active: !currentStatus }) });
     toast.promise(promise, {
       loading: 'Updating status...',
       success: (data) => {
@@ -191,15 +154,7 @@ export default function Vendors() {
   const handleUpdateStall = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingStall) return;
-
-    const promise = apiCall(`/updateStallProfile/${editingStall.stall_id}`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        stall_name: editingStall.stall_name,
-        location: editingStall.location,
-      }),
-    });
-
+    const promise = apiCall(`/updateStallProfile/${editingStall.stall_id}`, { method: 'PUT', body: JSON.stringify({ stall_name: editingStall.stall_name, location: editingStall.location }) });
     toast.promise(promise, {
       loading: 'Saving changes...',
       success: (data) => {
@@ -214,48 +169,21 @@ export default function Vendors() {
   const handleUpdateVendor = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingVendor) return;
-
-    if (editingVendor.new_password && editingVendor.new_password.length < 6) {
-      return toast.error('New password must be at least 6 characters');
-    }
-
+    if (editingVendor.new_password && editingVendor.new_password.length < 6) return toast.error('New password must be at least 6 characters');
     const updatePromise = (async () => {
       await apiCall(`/updateVendor/${editingVendor.admin_id}`, {
         method: 'PUT',
-        body: JSON.stringify({
-          full_name: editingVendor.full_name,
-          username: editingVendor.username,
-          stall_id: editingVendor.stall_id,
-        }),
+        body: JSON.stringify({ full_name: editingVendor.full_name, username: editingVendor.username, stall_id: editingVendor.stall_id }),
       });
-
-      if (editingVendor.new_password) {
-        await apiCall('/changeVendorPassword', {
-          method: 'PATCH',
-          body: JSON.stringify({
-            admin_id: editingVendor.admin_id,
-            new_password: editingVendor.new_password,
-          }),
-        });
-      }
-
+      if (editingVendor.new_password) await apiCall('/changeVendorPassword', { method: 'PATCH', body: JSON.stringify({ admin_id: editingVendor.admin_id, new_password: editingVendor.new_password }) });
       fetchVendors();
       setIsVendorEditOpen(false);
     })();
-
-    toast.promise(updatePromise, {
-      loading: 'Updating vendor profile...',
-      success: 'Vendor updated successfully',
-      error: (err) => err.message || 'Failed to update vendor',
-    });
+    toast.promise(updatePromise, { loading: 'Updating vendor profile...', success: 'Vendor updated successfully', error: (err) => err.message || 'Failed to update vendor' });
   };
 
   const handleDeleteStall = async (stallId: number) => {
-    const promise = apiCall('/deleteStall', {
-      method: 'DELETE',
-      body: JSON.stringify({ stall_id: stallId }),
-    });
-
+    const promise = apiCall('/deleteStall', { method: 'DELETE', body: JSON.stringify({ stall_id: stallId }) });
     toast.promise(promise, {
       loading: 'Deleting stall...',
       success: (data) => {
@@ -269,12 +197,7 @@ export default function Vendors() {
   const handleArchiveVendor = async (adminId: number) => {
     const vendor = vendors.find((v) => v.admin_id === adminId);
     if (!vendor) return;
-
-    const promise = apiCall('/archiveVendor', {
-      method: 'DELETE',
-      body: JSON.stringify({ admin_id: adminId }),
-    });
-
+    const promise = apiCall('/archiveVendor', { method: 'DELETE', body: JSON.stringify({ admin_id: adminId }) });
     toast.promise(promise, {
       loading: `${vendor.is_active ? 'Archiving' : 'Restoring'} vendor...`,
       success: (data) => {
@@ -285,35 +208,22 @@ export default function Vendors() {
     });
   };
 
-  // --- Filter Logic ---
-  const filteredStalls = stalls.filter((s) => {
-    const matchesSearch = s.stall_name.toLowerCase().includes(stallSearch.toLowerCase());
-    const matchesTab = stallTab === 'active' ? s.is_active : !s.is_active;
-    return matchesSearch && matchesTab;
-  });
+  const filteredStalls = stalls.filter((s) => s.stall_name.toLowerCase().includes(stallSearch.toLowerCase()) && (stallTab === 'active' ? s.is_active : !s.is_active));
+  const filteredVendors = useMemo(
+    () =>
+      vendors
+        .filter((v) => (v.full_name.toLowerCase().includes(vendorSearch.toLowerCase()) || v.username.toLowerCase().includes(vendorSearch)) && (vendorTab === 'active' ? v.is_active : !v.is_active))
+        .sort((a, b) => b.stall_id - a.stall_id),
+    [vendors, vendorSearch, vendorTab]
+  );
+  const uniqueLocations = useMemo(() => Array.from(new Set(stalls.map((s) => s.location))).filter((loc) => loc && loc.trim() !== ''), [stalls]);
 
-  const filteredVendors = useMemo(() => {
-    return vendors
-      .filter((v) => {
-        const matchesSearch = v.full_name.toLowerCase().includes(vendorSearch.toLowerCase()) || v.username.toLowerCase().includes(vendorSearch);
-        const matchesTab = vendorTab === 'active' ? v.is_active : !v.is_active;
-        return matchesSearch && matchesTab;
-      })
-      .sort((a, b) => b.stall_id - a.stall_id);
-  }, [vendors, vendorSearch, vendorTab]);
-
-  const uniqueLocations = useMemo(() => {
-    const locations = stalls.map((s) => s.location);
-    return Array.from(new Set(locations)).filter((loc) => loc && loc.trim() !== '');
-  }, [stalls]);
+  const tabActive = 'bg-white shadow-sm text-[#1a5c2a] font-semibold';
+  const tabInactive = 'text-slate-500 hover:text-[#1a5c2a]';
 
   return (
-    <div className="space-y-6">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Manage Stalls & Vendors</h1>
-      </header>
-
-      {/* --- Modals --- */}
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
+      {/* Edit Stall Modal */}
       <Dialog open={isStallEditOpen} onOpenChange={setIsStallEditOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -339,7 +249,7 @@ export default function Vendors() {
               <Button type="button" variant="outline" onClick={() => setIsStallEditOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-black text-white hover:bg-slate-800">
+              <Button type="submit" style={{ backgroundColor: '#1a5c2a', color: '#fff' }} className="hover:opacity-90">
                 Save Changes
               </Button>
             </DialogFooter>
@@ -347,6 +257,7 @@ export default function Vendors() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Vendor Modal */}
       <Dialog open={isVendorEditOpen} onOpenChange={setIsVendorEditOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -361,7 +272,6 @@ export default function Vendors() {
                 <Input className="pl-9" value={editingVendor?.full_name || ''} onChange={(e) => setEditingVendor((prev) => (prev ? { ...prev, full_name: e.target.value } : null))} required />
               </div>
             </div>
-
             <div className="space-y-2">
               <label className="text-sm font-medium">Username</label>
               <div className="relative">
@@ -369,7 +279,6 @@ export default function Vendors() {
                 <Input className="pl-9" value={editingVendor?.username || ''} onChange={(e) => setEditingVendor((prev) => (prev ? { ...prev, username: e.target.value } : null))} required />
               </div>
             </div>
-
             <div className="space-y-2">
               <label className="text-sm font-medium">Assigned Stall</label>
               <Select value={editingVendor?.stall_id?.toString()} onValueChange={(val) => setEditingVendor((prev) => (prev ? { ...prev, stall_id: parseInt(val) } : null))}>
@@ -385,7 +294,6 @@ export default function Vendors() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium">Change Password</label>
@@ -401,12 +309,11 @@ export default function Vendors() {
                 />
               </div>
             </div>
-
             <DialogFooter className="pt-4">
               <Button type="button" variant="outline" onClick={() => setIsVendorEditOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-black text-white hover:bg-slate-800">
+              <Button type="submit" style={{ backgroundColor: '#1a5c2a', color: '#fff' }} className="hover:opacity-90">
                 Save Changes
               </Button>
             </DialogFooter>
@@ -414,17 +321,19 @@ export default function Vendors() {
         </DialogContent>
       </Dialog>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Initialize New Stall */}
-        <Card>
+      {/* Form Cards */}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <Card className="shadow-sm" style={{ border: '1.5px solid #c9a84c', backgroundColor: '#ffffff' }}>
           <CardHeader>
-            <CardTitle>Initialize New Stall</CardTitle>
+            <CardTitle style={{ color: '#1a5c2a' }}>Initialize New Stall</CardTitle>
             <CardDescription>Set up the physical stall location first.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             <form onSubmit={handleCreateStall} className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Stall Name</label>
+                <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                  Stall Name
+                </label>
                 <div className="relative">
                   <Store className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                   <Input
@@ -437,7 +346,9 @@ export default function Vendors() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Location</label>
+                <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                  Location
+                </label>
                 <div className="relative">
                   <MapPin className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                   <Input
@@ -449,37 +360,40 @@ export default function Vendors() {
                     list="location-suggestions"
                   />
                   <datalist id="location-suggestions">
-                    {uniqueLocations.map((loc, index) => (
-                      <option key={index} value={loc} />
+                    {uniqueLocations.map((loc, i) => (
+                      <option key={i} value={loc} />
                     ))}
                   </datalist>
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-[#111] font-medium text-white transition-all hover:bg-black">
+              <Button type="submit" className="w-full font-medium text-white transition-all hover:opacity-90" style={{ backgroundColor: '#1a5c2a' }}>
                 Create Stall
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        {/* Register Vendor Account */}
-        <Card>
+        <Card className="shadow-sm" style={{ border: '1.5px solid #c9a84c', backgroundColor: '#ffffff' }}>
           <CardHeader>
-            <CardTitle>Register Vendor Account</CardTitle>
+            <CardTitle style={{ color: '#1a5c2a' }}>Register Vendor Account</CardTitle>
             <CardDescription>Assign a manager to an existing stall from the directory.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             <form onSubmit={handleRegisterVendor} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Full Name</label>
+                  <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                    Full Name
+                  </label>
                   <div className="relative">
                     <Contact className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                     <Input className="pl-9" placeholder="Enter full name..." value={vendorData.full_name} onChange={(e) => setVendorData({ ...vendorData, full_name: e.target.value })} required />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Assigned Stall</label>
+                  <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                    Assigned Stall
+                  </label>
                   <Select value={vendorData.stall_id} onValueChange={(val) => setVendorData({ ...vendorData, stall_id: val })}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select a stall" />
@@ -498,17 +412,19 @@ export default function Vendors() {
                   </Select>
                 </div>
               </div>
-
               <div className="space-y-2">
-                <label className="text-sm font-medium">Username</label>
+                <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                  Username
+                </label>
                 <div className="relative">
                   <User className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                   <Input className="pl-9" placeholder="Enter username..." value={vendorData.username} onChange={(e) => setVendorData({ ...vendorData, username: e.target.value })} required />
                 </div>
               </div>
-
               <div className="space-y-2">
-                <label className="text-sm font-medium">Password</label>
+                <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                  Password
+                </label>
                 <PasswordInput
                   placeholder="••••••••"
                   value={vendorData.password}
@@ -517,8 +433,7 @@ export default function Vendors() {
                   leftIcon={<RectangleEllipsis className="h-4 w-4" />}
                 />
               </div>
-
-              <Button type="submit" className="w-full bg-[#111] font-medium text-white transition-all hover:bg-black">
+              <Button type="submit" className="w-full font-medium text-white transition-all hover:opacity-90" style={{ backgroundColor: '#1a5c2a' }}>
                 Register Vendor
               </Button>
             </form>
@@ -526,52 +441,55 @@ export default function Vendors() {
         </Card>
       </div>
 
+      {/* Directory Tables */}
       <TooltipProvider>
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Stall Directory Table */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle>Stall Directory</CardTitle>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Stall Directory */}
+          <Card className="shadow-sm" style={{ border: '1.5px solid #c9a84c', backgroundColor: '#ffffff' }}>
+            <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
+              <CardTitle style={{ color: '#1a5c2a' }}>Stall Directory</CardTitle>
               <div className="flex items-center gap-2">
-                <div className="mr-2 flex rounded-md bg-slate-100 p-0.5">
-                  <button
-                    onClick={() => setStallTab('active')}
-                    className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${stallTab === 'active' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                  >
+                <div className="flex rounded-md p-0.5" style={{ backgroundColor: '#e8f0e9' }}>
+                  <button onClick={() => setStallTab('active')} className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${stallTab === 'active' ? tabActive : tabInactive}`}>
                     Active
                   </button>
-                  <button
-                    onClick={() => setStallTab('deactivated')}
-                    className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${stallTab === 'deactivated' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                  >
+                  <button onClick={() => setStallTab('deactivated')} className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${stallTab === 'deactivated' ? tabActive : tabInactive}`}>
                     Deactivated
                   </button>
                 </div>
                 <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => fetchStalls(true)}>
                   <RefreshCw className="h-4 w-4" />
                 </Button>
-                <div className="relative w-48">
+                <div className="relative w-36 sm:w-44">
                   <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
                   <Input placeholder="Search stalls..." className="h-9 pl-8 text-sm" value={stallSearch} onChange={(e) => setStallSearch(e.target.value)} />
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="mx-6 overflow-hidden rounded-md border border-slate-200">
-                <Table className="w-full min-w-[600px] table-fixed">
-                  <TableHeader className="sticky top-0 z-10 block w-full border-b bg-slate-50/50 pr-[6px]">
+              <div className="mx-4 mb-4 overflow-hidden overflow-x-auto rounded-md md:mx-6" style={{ border: '1px solid #c9a84c4d' }}>
+                <Table className="w-full min-w-[500px] table-fixed">
+                  <TableHeader className="sticky top-0 z-10 block w-full border-b pr-[6px]" style={{ backgroundColor: '#f5f9f5', borderColor: '#d4e8d4' }}>
                     <TableRow className="flex w-full">
-                      <TableHead className="flex w-[15%] items-center py-3 pl-6">Stall ID</TableHead>
-                      <TableHead className="flex w-[45%] items-center py-3">Name & Location</TableHead>
-                      <TableHead className="flex w-[15%] items-center justify-center py-3">Status</TableHead>
-                      <TableHead className="flex w-[25%] items-center justify-center py-3">Actions</TableHead>
+                      <TableHead className="flex w-[15%] items-center py-3 pl-6 font-semibold" style={{ color: '#14491f' }}>
+                        Stall ID
+                      </TableHead>
+                      <TableHead className="flex w-[45%] items-center py-3 font-semibold" style={{ color: '#14491f' }}>
+                        Name & Location
+                      </TableHead>
+                      <TableHead className="flex w-[15%] items-center justify-center py-3 font-semibold" style={{ color: '#14491f' }}>
+                        Status
+                      </TableHead>
+                      <TableHead className="flex w-[25%] items-center justify-center py-3 font-semibold" style={{ color: '#14491f' }}>
+                        Actions
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody className="block max-h-[242px] w-full overflow-y-auto">
                     {loadingLists ? (
                       <TableRow className="flex w-full items-center justify-center py-20">
                         <TableCell className="flex flex-col items-center gap-2">
-                          <RefreshCw className="text-muted-foreground h-6 w-6 animate-spin" />
+                          <RefreshCw className="h-6 w-6 animate-spin" style={{ color: '#1a5c2a' }} />
                           <span className="text-muted-foreground text-xs">Fetching stalls...</span>
                         </TableCell>
                       </TableRow>
@@ -581,15 +499,17 @@ export default function Vendors() {
                       </TableRow>
                     ) : (
                       filteredStalls.map((s) => (
-                        <TableRow key={s.stall_id} className="flex w-full border-b last:border-0 hover:bg-slate-50/30">
-                          <TableCell className="flex w-[15%] items-center py-3 pl-6 text-sm font-medium">#{s.stall_id}</TableCell>
+                        <TableRow key={s.stall_id} className="flex w-full border-b last:border-0" style={{ borderColor: '#e8f0e9' }}>
+                          <TableCell className="flex w-[15%] items-center py-3 pl-6 text-sm font-medium" style={{ color: '#1a5c2a' }}>
+                            #{s.stall_id}
+                          </TableCell>
                           <TableCell className="flex w-[45%] min-w-0 flex-col justify-center py-3">
                             <div className="truncate text-sm font-semibold">{s.stall_name}</div>
                             <div className="text-muted-foreground truncate text-[11px]">{s.location}</div>
                           </TableCell>
                           <TableCell className="flex w-[15%] items-center justify-center py-3">
                             <span
-                              className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${s.is_active ? 'border-green-200 bg-green-100 text-green-700' : 'border-red-200 bg-red-100 text-red-700'} border`}
+                              className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase ${s.is_active ? 'border-green-200 bg-green-100 text-green-700' : 'border-red-200 bg-red-100 text-red-700'}`}
                             >
                               {s.is_active ? 'Active' : 'Inactive'}
                             </span>
@@ -611,7 +531,6 @@ export default function Vendors() {
                               </TooltipTrigger>
                               <TooltipContent>Edit Stall</TooltipContent>
                             </Tooltip>
-
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -625,7 +544,6 @@ export default function Vendors() {
                               </TooltipTrigger>
                               <TooltipContent>{s.is_active ? 'Deactivate Stall' : 'Activate Stall'}</TooltipContent>
                             </Tooltip>
-
                             <Tooltip>
                               <Dialog>
                                 <TooltipTrigger asChild>
@@ -635,11 +553,9 @@ export default function Vendors() {
                                     </Button>
                                   </DialogTrigger>
                                 </TooltipTrigger>
-
                                 <TooltipContent>
                                   <p>Delete Stall</p>
                                 </TooltipContent>
-
                                 <DialogContent>
                                   <DialogHeader>
                                     <DialogTitle>Are you sure?</DialogTitle>
@@ -668,50 +584,52 @@ export default function Vendors() {
             </CardContent>
           </Card>
 
-          {/* Vendor Directory Table */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle>Vendor Directory</CardTitle>
+          {/* Vendor Directory */}
+          <Card className="shadow-sm" style={{ border: '1.5px solid #c9a84c', backgroundColor: '#ffffff' }}>
+            <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 space-y-0">
+              <CardTitle style={{ color: '#1a5c2a' }}>Vendor Directory</CardTitle>
               <div className="flex items-center gap-2">
-                <div className="mr-2 flex rounded-md bg-slate-100 p-0.5">
-                  <button
-                    onClick={() => setVendorTab('active')}
-                    className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${vendorTab === 'active' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                  >
+                <div className="flex rounded-md p-0.5" style={{ backgroundColor: '#e8f0e9' }}>
+                  <button onClick={() => setVendorTab('active')} className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${vendorTab === 'active' ? tabActive : tabInactive}`}>
                     Active
                   </button>
-                  <button
-                    onClick={() => setVendorTab('archived')}
-                    className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${vendorTab === 'archived' ? 'bg-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                  >
+                  <button onClick={() => setVendorTab('archived')} className={`rounded-sm px-3 py-1 text-xs font-medium transition-all ${vendorTab === 'archived' ? tabActive : tabInactive}`}>
                     Archived
                   </button>
                 </div>
                 <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => fetchVendors(true)}>
                   <RefreshCw className="h-4 w-4" />
                 </Button>
-                <div className="relative w-48">
+                <div className="relative w-36 sm:w-44">
                   <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
                   <Input placeholder="Search vendors..." className="h-9 pl-8 text-sm" value={vendorSearch} onChange={(e) => setVendorSearch(e.target.value)} />
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="mx-6 overflow-hidden rounded-md border border-slate-200">
-                <Table className="w-full min-w-[600px] table-fixed">
-                  <TableHeader className="sticky top-0 z-10 block w-full border-b bg-slate-50/50 pr-[6px]">
+              <div className="mx-4 mb-4 overflow-hidden overflow-x-auto rounded-md md:mx-6" style={{ border: '1px solid #c9a84c4d' }}>
+                <Table className="w-full min-w-[500px] table-fixed">
+                  <TableHeader className="sticky top-0 z-10 block w-full border-b pr-[6px]" style={{ backgroundColor: '#f5f9f5', borderColor: '#d4e8d4' }}>
                     <TableRow className="flex w-full">
-                      <TableHead className="flex w-[15%] items-center py-3 pl-6">Stall ID</TableHead>
-                      <TableHead className="flex w-[45%] items-center py-3">Name & Username</TableHead>
-                      <TableHead className="flex w-[15%] items-center justify-center py-3">Status</TableHead>
-                      <TableHead className="flex w-[25%] items-center justify-center py-3">Actions</TableHead>
+                      <TableHead className="flex w-[15%] items-center py-3 pl-6 font-semibold" style={{ color: '#14491f' }}>
+                        Stall ID
+                      </TableHead>
+                      <TableHead className="flex w-[45%] items-center py-3 font-semibold" style={{ color: '#14491f' }}>
+                        Name & Username
+                      </TableHead>
+                      <TableHead className="flex w-[15%] items-center justify-center py-3 font-semibold" style={{ color: '#14491f' }}>
+                        Status
+                      </TableHead>
+                      <TableHead className="flex w-[25%] items-center justify-center py-3 font-semibold" style={{ color: '#14491f' }}>
+                        Actions
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody className="block max-h-[242px] w-full overflow-y-auto">
                     {loadingLists ? (
                       <TableRow className="flex w-full items-center justify-center py-20">
                         <TableCell className="flex flex-col items-center gap-2">
-                          <RefreshCw className="text-muted-foreground h-6 w-6 animate-spin" />
+                          <RefreshCw className="h-6 w-6 animate-spin" style={{ color: '#1a5c2a' }} />
                           <span className="text-muted-foreground text-xs">Loading vendors...</span>
                         </TableCell>
                       </TableRow>
@@ -721,15 +639,17 @@ export default function Vendors() {
                       </TableRow>
                     ) : (
                       filteredVendors.map((v) => (
-                        <TableRow key={v.admin_id} className="flex w-full border-b last:border-0 hover:bg-slate-50/30">
-                          <TableCell className="flex w-[15%] items-center py-3 pl-6 text-sm font-medium">#{v.stall_id}</TableCell>
+                        <TableRow key={v.admin_id} className="flex w-full border-b last:border-0" style={{ borderColor: '#e8f0e9' }}>
+                          <TableCell className="flex w-[15%] items-center py-3 pl-6 text-sm font-medium" style={{ color: '#1a5c2a' }}>
+                            #{v.stall_id}
+                          </TableCell>
                           <TableCell className="flex w-[45%] min-w-0 flex-col justify-center py-3">
                             <div className="truncate text-sm font-semibold">{v.full_name}</div>
                             <div className="text-muted-foreground truncate text-[11px]">@{v.username}</div>
                           </TableCell>
                           <TableCell className="flex w-[15%] items-center justify-center py-3">
                             <span
-                              className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ${v.is_active ? 'border-green-200 bg-green-100 text-green-700' : 'border-slate-200 bg-slate-100 text-slate-500'} border`}
+                              className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase ${v.is_active ? 'border-green-200 bg-green-100 text-green-700' : 'border-slate-200 bg-slate-100 text-slate-500'}`}
                             >
                               {v.is_active ? 'Active' : 'Archived'}
                             </span>

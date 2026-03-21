@@ -3,7 +3,6 @@ import { Users, Store, UserStar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Dashboard() {
-  // 1. Define state to hold your counts
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalVendors: 0,
@@ -12,11 +11,9 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
 
-  // 2. Fetch data from your Express API
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
-        // FIX: Changed from 'token' to 'adminToken' to match your working reference
         const token = localStorage.getItem('adminToken');
 
         const response = await fetch('http://localhost:3000/api/adminDashboard', {
@@ -45,41 +42,45 @@ export default function Dashboard() {
 
     fetchDashboardStats();
   }, []);
-  return (
-    <>
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome, Head Admin</h1>
-      </header>
 
-      {/* Stats Grid */}
-      <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Users" value={loading ? '...' : stats.totalUsers.toLocaleString()} icon={<Users className="text-blue-500" />} />
-        <StatCard title="Total Vendors" value={loading ? '...' : stats.totalVendors.toLocaleString()} icon={<UserStar className="text-gray-500" />} />
-        <StatCard title="Active Stalls" value={loading ? '...' : stats.activeStalls.toLocaleString()} icon={<Store className="text-green-500" />} />
-        <StatCard title="Inactive Stalls" value={loading ? '...' : stats.inactiveStalls.toLocaleString()} icon={<Store className="text-gray-500" />} />
+  return (
+    <div className="p-4 md:p-6 lg:p-8">
+      {/* Stats Grid: 1 col → 2 col → 4 col */}
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard title="Total Users" value={loading ? '...' : stats.totalUsers.toLocaleString()} icon={<Users className="h-5 w-5" style={{ color: '#1a5c2a' }} />} />
+        <StatCard title="Total Vendors" value={loading ? '...' : stats.totalVendors.toLocaleString()} icon={<UserStar className="h-5 w-5" style={{ color: '#c9a84c' }} />} />
+        <StatCard title="Active Stalls" value={loading ? '...' : stats.activeStalls.toLocaleString()} icon={<Store className="h-5 w-5" style={{ color: '#1a5c2a' }} />} />
+        <StatCard title="Inactive Stalls" value={loading ? '...' : stats.inactiveStalls.toLocaleString()} icon={<Store className="h-5 w-5 text-gray-400" />} />
       </div>
 
-      <Card className="col-span-4 flex flex-col border-2 shadow-sm">
+      {/* Recent Activity Card */}
+      <Card className="flex flex-col shadow-sm" style={{ border: '1.5px solid #c9a84c', backgroundColor: '#ffffff' }}>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
+          <CardTitle style={{ color: '#1a5c2a' }}>Recent Activity</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-muted-foreground flex h-[200px] items-center justify-center rounded-md border-2 border-dashed">Main management table or charts will go here.</div>
+        <CardContent className="pt-4">
+          <div className="flex h-[200px] items-center justify-center rounded-md border-2 border-dashed text-sm" style={{ borderColor: '#b8d9be', color: '#6b7280', backgroundColor: '#f5fbf6' }}>
+            Main management table or charts will go here.
+          </div>
         </CardContent>
       </Card>
-    </>
+    </div>
   );
 }
 
 function StatCard({ title, value, icon }: { title: string; value: string; icon: React.ReactNode }) {
   return (
-    <Card>
+    <Card className="shadow-sm transition-shadow hover:shadow-md" style={{ border: '1.5px solid #c9a84c', backgroundColor: '#ffffff' }}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium" style={{ color: '#14491f' }}>
+          {title}
+        </CardTitle>
         {icon}
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+      <CardContent className="pt-3">
+        <div className="text-2xl font-bold" style={{ color: '#1a5c2a' }}>
+          {value}
+        </div>
       </CardContent>
     </Card>
   );

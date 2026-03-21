@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PasswordInput } from '@/components/ui/password-input'; // Import your new component
+import { PasswordInput } from '@/components/ui/password-input';
 import { toast } from 'sonner';
-import { User, RectangleEllipsis } from 'lucide-react';
+import { User, RectangleEllipsis, ShieldCheck } from 'lucide-react';
 
 export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
@@ -57,30 +57,98 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50">
-      <div className="w-full max-w-md space-y-6 rounded-lg border border-slate-100 bg-white p-8 shadow-md">
-        <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Admin Access</h1>
-          <p className="text-muted-foreground text-sm">Login using your head admin credentials.</p>
+    <div
+      className="flex min-h-screen items-center justify-center"
+      style={{ backgroundColor: '#f0f7f1' }}
+    >
+      <div
+        className="w-full max-w-md space-y-6 rounded-xl p-8 shadow-md"
+        style={{
+          backgroundColor: '#ffffff',
+          border: '1.5px solid #c9a84c',
+        }}
+      >
+        {/* Gold top accent line */}
+        <div
+          className="-mx-8 -mt-8 mb-6 h-1 rounded-t-xl"
+          style={{ background: 'linear-gradient(90deg, #c9a84c, #e8c96a, #c9a84c)' }}
+        />
+
+        {/* Header */}
+        <div className="space-y-3 text-center">
+          {/* Shield icon badge */}
+          <div className="flex justify-center">
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-xl border"
+              style={{
+                backgroundColor: '#f0f7f1',
+                borderColor: '#c9a84c',
+              }}
+            >
+              <ShieldCheck className="h-7 w-7" style={{ color: '#1a5c2a' }} />
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: '#c9a84c' }}>
+              PHINMA Education
+            </p>
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#1a5c2a' }}>
+              UPSmart Canteen
+            </h1>
+          </div>
+
+          {/* Gold underline accent */}
+          <div
+            className="mx-auto h-0.5 w-64 rounded-full"
+            style={{ background: 'linear-gradient(90deg, transparent, #c9a84c, transparent)' }}
+          />
+
+          <p className="text-sm" style={{ color: '#6b7280' }}>
+            Login using your head admin credentials.
+          </p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-4">
           {/* Username Field */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Username</label>
+            <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+              Username
+            </label>
             <div className="relative">
               <User className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
-              <Input name="username" className="pl-9" placeholder="Enter your username here..." value={formData.username} onChange={handleInputChange} required />
+              <Input
+                name="username"
+                className="pl-9"
+                placeholder="Enter your username here..."
+                value={formData.username}
+                onChange={handleInputChange}
+                required
+              />
             </div>
           </div>
 
-          {/* Password Field - Now using Reusable Component */}
+          {/* Password Field */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Password</label>
-            <PasswordInput name="password" placeholder="••••••••" value={formData.password} onChange={handleInputChange} required leftIcon={<RectangleEllipsis className="h-4 w-4" />} />
+            <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+              Password
+            </label>
+            <PasswordInput
+              name="password"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleInputChange}
+              required
+              leftIcon={<RectangleEllipsis className="h-4 w-4" />}
+            />
           </div>
 
-          <Button type="submit" className="w-full bg-[#111] transition-all hover:bg-black" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full font-medium text-white transition-all hover:opacity-90"
+            style={{ backgroundColor: '#1a5c2a' }}
+            disabled={isLoading}
+          >
             {isLoading ? 'Authenticating...' : 'Login to Dashboard'}
           </Button>
         </form>
