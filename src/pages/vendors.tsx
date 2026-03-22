@@ -141,7 +141,7 @@ export default function Vendors() {
   };
 
   const toggleStallStatus = async (stallId: number, currentStatus: boolean) => {
-    const promise = apiCall('/updateStallStatus', { method: 'PATCH', body: JSON.stringify({ stall_id: stallId, is_active: !currentStatus }) });
+    const promise = apiCall('/updateStallActiveStatus', { method: 'PATCH', body: JSON.stringify({ stall_id: stallId, is_active: !currentStatus }) });
     toast.promise(promise, {
       loading: 'Updating status...',
       success: (data) => {
@@ -237,19 +237,23 @@ export default function Vendors() {
       <Dialog open={isStallEditOpen} onOpenChange={setIsStallEditOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit Stall Details</DialogTitle>
+            <DialogTitle style={{ color: '#1a5c2a' }}>Edit Stall Details</DialogTitle>
             <DialogDescription>Update the name and physical location for this stall.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateStall} className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Stall Name</label>
+              <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                Stall Name
+              </label>
               <div className="relative">
                 <Store className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                 <Input className="pl-9" value={editingStall?.stall_name || ''} onChange={(e) => setEditingStall((prev) => (prev ? { ...prev, stall_name: e.target.value } : null))} required />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Location</label>
+              <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                Location
+              </label>
               <div className="relative">
                 <MapPin className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                 <Input className="pl-9" value={editingStall?.location || ''} onChange={(e) => setEditingStall((prev) => (prev ? { ...prev, location: e.target.value } : null))} required />
@@ -271,26 +275,32 @@ export default function Vendors() {
       <Dialog open={isVendorEditOpen} onOpenChange={setIsVendorEditOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit Vendor Profile</DialogTitle>
+            <DialogTitle style={{ color: '#1a5c2a' }}>Edit Vendor Profile</DialogTitle>
             <DialogDescription>Update vendor details, stall assignment, or credentials.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdateVendor} className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Full Name</label>
+              <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                Full Name
+              </label>
               <div className="relative">
                 <Contact className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                 <Input className="pl-9" value={editingVendor?.full_name || ''} onChange={(e) => setEditingVendor((prev) => (prev ? { ...prev, full_name: e.target.value } : null))} required />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Username</label>
+              <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                Username
+              </label>
               <div className="relative">
                 <User className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
                 <Input className="pl-9" value={editingVendor?.username || ''} onChange={(e) => setEditingVendor((prev) => (prev ? { ...prev, username: e.target.value } : null))} required />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Assigned Stall</label>
+              <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                Assigned Stall
+              </label>
               <Select value={editingVendor?.stall_id?.toString()} onValueChange={(val) => setEditingVendor((prev) => (prev ? { ...prev, stall_id: parseInt(val) } : null))}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a stall" />
@@ -306,7 +316,9 @@ export default function Vendors() {
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Change Password</label>
+                <label className="text-sm font-medium" style={{ color: '#14491f' }}>
+                  Change Password
+                </label>
                 <span className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">Optional</span>
               </div>
               <div className="relative">

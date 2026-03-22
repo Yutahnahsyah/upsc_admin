@@ -196,15 +196,45 @@ export default function UserAccounts() {
                         </TableCell>
                         <TableCell className="flex items-center justify-center py-2">
                           {/* Archive / Restore Button */}
+                          {/* Archive / Restore Button */}
                           <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 text-xs text-amber-600 hover:bg-amber-50" onClick={() => handleArchive(user.employee_id, user.is_active)}>
-                                {user.is_active ? <ArchiveIcon className="h-3.5 w-3.5" /> : <ArchiveRestore className="h-3.5 w-3.5" />}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="border-none bg-slate-900 text-[11px] text-white">
-                              <p>{user.is_active ? 'Archive User' : 'Restore User'}</p>
-                            </TooltipContent>
+                            <Dialog>
+                              <TooltipTrigger asChild>
+                                <DialogTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-8 text-xs text-amber-600 hover:bg-amber-50">
+                                    {user.is_active ? <ArchiveIcon className="h-3.5 w-3.5" /> : <ArchiveRestore className="h-3.5 w-3.5" />}
+                                  </Button>
+                                </DialogTrigger>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="border-none bg-slate-900 text-[11px] text-white">
+                                <p>{user.is_active ? 'Archive User' : 'Restore User'}</p>
+                              </TooltipContent>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>{user.is_active ? 'Archive User Account' : 'Restore User Account'}</DialogTitle>
+                                  <DialogDescription>
+                                    Are you sure you want to {user.is_active ? 'archive' : 'restore'} <span className="font-bold text-slate-900">{user.full_name}</span>?{' '}
+                                    {user.is_active ? 'They will lose access to the app.' : 'They will regain access to the app.'}
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter className="gap-2">
+                                  <DialogClose asChild>
+                                    <Button variant="outline" size="sm">
+                                      Cancel
+                                    </Button>
+                                  </DialogClose>
+                                  <DialogClose asChild>
+                                    <Button
+                                      size="sm"
+                                      className={user.is_active ? 'bg-amber-600 text-white hover:bg-amber-700' : 'bg-green-700 text-white hover:bg-green-800'}
+                                      onClick={() => handleArchive(user.employee_id, user.is_active)}
+                                    >
+                                      {user.is_active ? 'Confirm Archive' : 'Confirm Restore'}
+                                    </Button>
+                                  </DialogClose>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
                           </Tooltip>
                           <Tooltip>
                             <Dialog>
