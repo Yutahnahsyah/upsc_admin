@@ -1,5 +1,13 @@
+import { useEffect } from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Store, Users, LogOut, ShieldCheck, ChevronRight, ShieldUser } from 'lucide-react';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:3000', {
+  autoConnect: false,
+  reconnection: true,
+  reconnectionAttempts: 5,
+});
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard': 'Dashboard',
@@ -11,7 +19,26 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  useEffect(() => {
+    socket.connect();
+
+    socket.on('connect', () => {
+      console.log('Admin Socket Connected:', socket.id);
+    });
+
+    socket.on('user_data_changed', () => {
+      console.log('Live Update Received: Refreshing user list...');
+      window.dispatchEvent(new CustomEvent('refresh-user-list'));
+    });
+
+    return () => {
+      socket.off('user_data_changed');
+      socket.disconnect();
+    };
+  }, []);
+
   const handleLogout = () => {
+    socket.disconnect();
     localStorage.removeItem('adminToken');
     navigate('/');
   };
@@ -28,7 +55,7 @@ export default function AdminLayout() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* ── Sidebar — copied exactly from VendorLayout ── */}
+      {/* Sidebar */}
       <aside
         className="fixed hidden h-full flex-col overflow-hidden transition-all duration-200 md:flex md:w-16 lg:w-56"
         style={{ background: 'linear-gradient(180deg, #1a5c2a 0%, #14491f 60%, #0f3a18 100%)' }}
@@ -36,7 +63,7 @@ export default function AdminLayout() {
         {/* Gold top accent */}
         <div className="h-1 w-full flex-shrink-0" style={{ background: 'linear-gradient(90deg, #c9a84c, #e8c96a, #c9a84c)' }} />
 
-        {/* Brand — hidden on icon-only (md) */}
+        {/* Brand */}
         <div className="hidden flex-shrink-0 border-b border-white/10 px-5 py-5 lg:block">
           <span className="text-xs font-semibold tracking-widest text-amber-300/80 uppercase">PHINMA Education</span>
           <h2 className="mt-0.5 text-lg leading-tight font-bold text-white">UPSmart Canteen</h2>
@@ -91,9 +118,9 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* ── Main Area — copied exactly from VendorLayout ── */}
+      {/* Main Area */}
       <div className="flex min-h-screen flex-1 flex-col md:ml-16 lg:ml-56">
-        {/* ── Top Header Bar ── */}
+        {/* Top Header Bar */}
         <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b px-6 py-3" style={{ backgroundColor: '#ffffff', borderColor: '#e8d99a' }}>
           {/* Left: Page Title */}
           <div>
@@ -103,7 +130,7 @@ export default function AdminLayout() {
             <div className="mt-0.5 h-0.5 rounded-full" style={{ width: `${pageTitle.length * 10}px`, background: 'linear-gradient(90deg, #c9a84c, #e8c96a, transparent)' }} />
           </div>
 
-          {/* Right: Admin Badge — same sizing as vendor badges */}
+          {/* Right: Admin Badge */}
           <div className="flex items-center gap-2 rounded-xl border px-3 py-1.5" style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}>
             <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border" style={{ backgroundColor: '#dbeafe', borderColor: '#93c5fd' }}>
               <ShieldUser className="h-3.5 w-3.5 text-blue-500" />
@@ -118,7 +145,7 @@ export default function AdminLayout() {
           </div>
         </header>
 
-        {/* ── Page Content ── */}
+        {/* Page Content */}
         <main className="flex-1" style={{ backgroundColor: '#f0f7f1' }}>
           <Outlet />
         </main>

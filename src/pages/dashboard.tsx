@@ -45,7 +45,7 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      {/* Stats Grid: 1 col → 2 col → 4 col */}
+      {/* Stats Grid */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard title="Total Users" value={loading ? '...' : stats.totalUsers.toLocaleString()} icon={<Users className="h-5 w-5" style={{ color: '#1a5c2a' }} />} />
         <StatCard title="Total Vendors" value={loading ? '...' : stats.totalVendors.toLocaleString()} icon={<UserStar className="h-5 w-5" style={{ color: '#c9a84c' }} />} />

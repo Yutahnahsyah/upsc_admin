@@ -11,12 +11,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Login Page */}
         <Route path="/" element={<AdminLogin />} />
 
-        {/* 1. Check if logged in */}
         <Route element={<ProtectedRoute />}>
-          {/* 2. Wrap these in the Sidebar Layout */}
           <Route element={<AdminLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/vendors" element={<Vendors />} />
@@ -24,7 +21,6 @@ function App() {
           </Route>
         </Route>
 
-        {/* Fallback for 404s */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       <Toaster />

@@ -50,6 +50,16 @@ export default function UserAccounts() {
 
   useEffect(() => {
     fetchUsers();
+
+    const handleSilentRefresh = () => {
+      fetchUsers(false);
+    };
+
+    window.addEventListener('refresh-user-list', handleSilentRefresh);
+
+    return () => {
+      window.removeEventListener('refresh-user-list', handleSilentRefresh);
+    };
   }, []);
 
   const filteredUsers = users.filter((user) => {
@@ -112,7 +122,7 @@ export default function UserAccounts() {
                   ))}
                 </TabsList>
               </Tabs>
-              {/* Shadcn Tabs for Department Filtering */}
+              {/* Department Filtering */}
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
                 <TabsList className="border bg-[#f4f7f4]" style={{ borderColor: '#d4e8d4' }}>
                   {DEPARTMENTS.map((dept) => (
